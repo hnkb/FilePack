@@ -3,6 +3,7 @@
 
 #include "Crib/WindowsBase.h"
 #include "../FilePack.h"
+#include "DataFormatter.h"
 
 
 class FilePackWindow : public Crib::Window
@@ -22,6 +23,9 @@ private:
 
 	std::wstring m_filename;
 	std::unique_ptr<FilePack::Reader> m_reader;
+
+	std::unique_ptr<FilePack::Reader::Block<uint8_t>> m_blockData;
+	std::unique_ptr<DataFormatter> m_format;
 
 
 	// Controls

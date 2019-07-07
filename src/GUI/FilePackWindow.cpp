@@ -83,8 +83,10 @@ void FilePackWindow::fillTree()
 
 void FilePackWindow::fillList()
 {
-	ListView_DeleteAllItems(hwListView);
 	while (ListView_DeleteColumn(hwListView, 0));
+
+	if (!m_format || m_format->columns.empty())
+		return;
 
 
 	WCHAR text[256];
@@ -93,40 +95,56 @@ void FilePackWindow::fillList()
 	lvc.mask = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
 	lvc.pszText = text;
 
-	for (int i = 0; i < 5; i++)
+	StringCchCopy(text, 256, L"Index");
+	lvc.iSubItem = 0;
+	lvc.cx = 100;
+	lvc.fmt = LVCFMT_LEFT;
+	ListView_InsertColumn(hwListView, lvc.iSubItem, &lvc);
+
+	for (int i = 0; i < m_format->columns.size(); i++)
 	{
-		StringCchPrintfW(text, 256, L"Column %d", i);
-		lvc.iSubItem = i;
+		StringCchCopy(text, 256, m_format->columns[i].name.c_str());
+		lvc.iSubItem = i + 1;
 		lvc.cx = 100;
 		lvc.fmt = LVCFMT_LEFT;
-		ListView_InsertColumn(hwListView, i, &lvc);
+		ListView_InsertColumn(hwListView, lvc.iSubItem, &lvc);
 	}
 
 
-	LVITEMW lvi;
-	lvi.mask = LVIF_TEXT | LVIF_STATE;
-	lvi.pszText = LPSTR_TEXTCALLBACKW;
-	lvi.state = lvi.stateMask = 0;
-	lvi.iSubItem = 0;
-
-	for (int i = 0; i < 20; i++)
-	{
-		lvi.iItem = i;
-		ListView_InsertItem(hwListView, &lvi);
-	}
+	ListView_SetItemCountEx(hwListView, m_blockData->size() / m_format->rowSize, LVSICF_NOSCROLL);
 }
 
 void FilePackWindow::selectBlock(std::string name)
 {
 	if (m_reader && m_reader->blocks().find(name) != m_reader->blocks().end())
 	{
+		std::map<std::string, std::string> formatDesc = {
+			{ "pt2d.flags", "bFlag" },
+			{ "pt2d.sf", "fFactorStdDev" },
+			{ "pt2d.sxy", "fStdDevX,fStdDevY" },
+			{ "pt2d.x", "fx" },
+			{ "pt2d.y", "fy" },
+			{ "pt3d.layer", "iLayer" },
+			{ "pt3d.mix2", "dX,dY,dZ,dStdDevX,dStdDevY,dStdDevZ" },
+		};
+
 		if (name == "js")
 		{
 			auto data = m_reader->get<char>(name);
 			SetWindowTextA(hwTextView, data.begin());
+			m_format.reset(nullptr);
+		}
+		else if (formatDesc.find(name) != formatDesc.end())
+		{
+			m_blockData.reset(new FilePack::Reader::Block<uint8_t>(std::move(m_reader->get<uint8_t>(name))));
+			m_format.reset(new DataFormatter(formatDesc.at(name)));
+			fillList();
 		}
 		else
-			SetWindowTextA(hwTextView, ("Block '" + name + "' selected").c_str());
+		{
+			m_format.reset(nullptr);
+			SetWindowText(hwTextView, L"");
+		}
 	}
 }
 
@@ -151,7 +169,12 @@ LRESULT FilePackWindow::proc(const UINT message, const WPARAM wParam, const LPAR
 			auto dispInfo = (NMLVDISPINFO*)lParam;
 			if (dispInfo->item.mask & LVIF_TEXT)
 			{
-				StringCchPrintf(dispInfo->item.pszText, dispInfo->item.cchTextMax, L"It %d Col %d", dispInfo->item.iItem, dispInfo->item.iSubItem);
+				if (dispInfo->item.iSubItem == 0)
+					StringCchPrintf(dispInfo->item.pszText, dispInfo->item.cchTextMax, L"%d", dispInfo->item.iItem);
+				else if (m_format && m_blockData)
+					m_format->get(dispInfo->item.pszText, dispInfo->item.cchTextMax, m_blockData->data(), dispInfo->item.iItem, dispInfo->item.iSubItem - 1);
+				else
+					dispInfo->item.pszText[0] = 0;
 			}
 			return TRUE;
 		}
