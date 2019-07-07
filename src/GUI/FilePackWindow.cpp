@@ -1,8 +1,9 @@
 
 #include "FilePackWindow.h"
-#include <CommCtrl.h>
 
+#include <CommCtrl.h>
 #include <strsafe.h>
+
 
 FilePackWindow::FilePackWindow() :
 	Crib::Window(),
@@ -10,12 +11,13 @@ FilePackWindow::FilePackWindow() :
 {
 	setTitle(L"FilePack Explorer");
 
-	HINSTANCE hInst = GetModuleHandleW(nullptr);
-	RECT rc;
-	GetClientRect(m_handle, &rc);
+	auto hInst = (HINSTANCE)GetWindowLongPtrW(m_handle, GWLP_HINSTANCE);
 
-	hwTreeView = CreateWindowExW(0, WC_TREEVIEWW, L"Tree View", WS_VISIBLE | WS_CHILD | WS_BORDER | TVS_HASLINES,
-		0, 0, widthTreeView, rc.bottom, m_handle, (HMENU)idTreeView, hInst, nullptr);
+	// Using some invalid size here, because soon a WM_SIZE will be sent to controls and they are resized in proc()
+
+	hwTreeView = CreateWindowExW(0, WC_TREEVIEWW, L"Tree View",
+		WS_VISIBLE | WS_CHILD | WS_BORDER | TVS_HASLINES,
+		0, 0, 0, 0, m_handle, (HMENU)idTreeView, hInst, nullptr);
 
 
 	fillTree();
@@ -29,6 +31,9 @@ FilePackWindow::~FilePackWindow()
 
 void FilePackWindow::fillTree()
 {
+	TreeView_DeleteAllItems(hwTreeView);
+
+
 	WCHAR title[] = L"root item!";
 
 	TVITEMW tvi;
@@ -44,13 +49,13 @@ void FilePackWindow::fillTree()
 	tvins.hParent = TVI_ROOT;
 	tvins.hInsertAfter = TVI_FIRST;
 
-	tvins.hParent = (HTREEITEM)SendMessageW(hwTreeView, TVM_INSERTITEMW, 0, (LPARAM)& tvins);
+	tvins.hParent = TreeView_InsertItem(hwTreeView, &tvins);
 	tvins.hInsertAfter = TVI_LAST;
 
 	for (int i = 0; i < 10; i++)
 	{
 		StringCchPrintfW(title, 10, L"Item %d", i);
-		SendMessageW(hwTreeView, TVM_INSERTITEMW, 0, (LPARAM)& tvins);
+		TreeView_InsertItem(hwTreeView, &tvins);
 	}
 }
 
@@ -59,9 +64,9 @@ LRESULT FilePackWindow::proc(const UINT message, const WPARAM wParam, const LPAR
 {
 	if (message == WM_SIZE)
 	{
-		RECT rc;
-		GetClientRect(m_handle, &rc);
-		MoveWindow(hwTreeView, 0, 0, widthTreeView, rc.bottom, TRUE);
+		const int width = LOWORD(lParam);
+		const int height = HIWORD(lParam);
+		MoveWindow(hwTreeView, 0, 0, widthTreeView, width, TRUE);
 	}
 
 	if (message == WM_KEYDOWN && wParam == VK_ESCAPE)
