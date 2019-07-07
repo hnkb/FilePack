@@ -17,6 +17,7 @@ protected:
 private:
 	void fillTree();
 	void fillList();
+	void selectBlock(std::string name);
 
 
 	std::wstring m_filename;

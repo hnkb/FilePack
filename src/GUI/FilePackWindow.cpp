@@ -116,6 +116,20 @@ void FilePackWindow::fillList()
 	}
 }
 
+void FilePackWindow::selectBlock(std::string name)
+{
+	if (m_reader && m_reader->blocks().find(name) != m_reader->blocks().end())
+	{
+		if (name == "js")
+		{
+			auto data = m_reader->get<char>(name);
+			SetWindowTextA(hwTextView, data.begin());
+		}
+		else
+			SetWindowTextA(hwTextView, ("Block '" + name + "' selected").c_str());
+	}
+}
+
 
 LRESULT FilePackWindow::proc(const UINT message, const WPARAM wParam, const LPARAM lParam)
 {
@@ -139,6 +153,22 @@ LRESULT FilePackWindow::proc(const UINT message, const WPARAM wParam, const LPAR
 			{
 				StringCchPrintf(dispInfo->item.pszText, dispInfo->item.cchTextMax, L"It %d Col %d", dispInfo->item.iItem, dispInfo->item.iSubItem);
 			}
+			return TRUE;
+		}
+
+		if (hdr->hwndFrom == hwTreeView && hdr->code == TVN_SELCHANGED)
+		{
+			auto tv = (NMTREEVIEW*)lParam;
+
+			WCHAR text[512];
+			TVITEM tvi;
+			tvi.hItem = tv->itemNew.hItem;
+			tvi.mask = TVIF_TEXT;
+			tvi.pszText = text;
+			tvi.cchTextMax = 512;
+			TreeView_GetItem(hwTreeView, &tvi);
+			selectBlock(Crib::toLatin1(text));
+			return 0;
 		}
 	}
 
