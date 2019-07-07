@@ -125,3 +125,25 @@ int main()
 
 	std::cout << "Done.\n";
 }
+
+
+#include "GUI/FilePackWindow.h"
+
+int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
+	_In_opt_ HINSTANCE /*hPrevInstance*/,
+	_In_ LPWSTR /*lpCmdLine*/,
+	_In_ int /*nCmdShow*/)
+{
+	try
+	{
+		Crib::InitializeCOM comInit;
+		FilePackWindow main;
+
+		return Crib::Application::messageLoop();
+	}
+	catch (std::exception& e)
+	{
+		MessageBoxA(nullptr, e.what(), "Error", MB_ICONERROR);
+		return -1;
+	}
+}
