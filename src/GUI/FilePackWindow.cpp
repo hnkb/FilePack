@@ -29,6 +29,7 @@ FilePackWindow::FilePackWindow() :
 	hwListView = CreateWindowExW(0, WC_LISTVIEWW, L"List View",
 		WS_VISIBLE | WS_CHILD | LVS_REPORT | LVS_OWNERDATA,
 		0, 0, 0, 0, m_handle, (HMENU)idListView, hInst, nullptr);
+	ListView_SetExtendedListViewStyleEx(hwListView, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
 
 
 	m_filename = L"C:\\Users\\hani\\OneDrive\\Desktop\\test-2.pcn";
@@ -133,17 +134,23 @@ void FilePackWindow::selectBlock(std::string name)
 			auto data = m_reader->get<char>(name);
 			SetWindowTextA(hwTextView, data.begin());
 			m_format.reset(nullptr);
+			ShowWindow(hwTextView, SW_SHOW);
+			ShowWindow(hwListView, SW_HIDE);
 		}
 		else if (formatDesc.find(name) != formatDesc.end())
 		{
 			m_blockData.reset(new FilePack::Reader::Block<uint8_t>(std::move(m_reader->get<uint8_t>(name))));
 			m_format.reset(new DataFormatter(formatDesc.at(name)));
 			fillList();
+			ShowWindow(hwTextView, SW_HIDE);
+			ShowWindow(hwListView, SW_SHOW);
 		}
 		else
 		{
 			m_format.reset(nullptr);
 			SetWindowText(hwTextView, L"");
+			ShowWindow(hwTextView, SW_HIDE);
+			ShowWindow(hwListView, SW_HIDE);
 		}
 	}
 }
@@ -156,8 +163,8 @@ LRESULT FilePackWindow::proc(const UINT message, const WPARAM wParam, const LPAR
 		const int width = LOWORD(lParam);
 		const int height = HIWORD(lParam);
 		MoveWindow(hwTreeView, 0, 0, widthTreeView, width, TRUE);
-		MoveWindow(hwTextView, widthTreeView + controlMargin, 0, width - widthTreeView - controlMargin, height / 2 - controlMargin, TRUE);
-		MoveWindow(hwListView, widthTreeView + controlMargin, height / 2, width - widthTreeView - controlMargin, height / 2, TRUE);
+		MoveWindow(hwTextView, widthTreeView + controlMargin, 0, width - widthTreeView - controlMargin, height, TRUE);
+		MoveWindow(hwListView, widthTreeView + controlMargin, 0, width - widthTreeView - controlMargin, height, TRUE);
 	}
 
 	if (message == WM_NOTIFY)
