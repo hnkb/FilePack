@@ -9,7 +9,7 @@
 #include <regex>
 #include "Compression.h"
 
-#define CompressHeader 0
+#define CompressHeader 1
 
 
 namespace FilePack

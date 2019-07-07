@@ -160,6 +160,7 @@
     <ClCompile Include="src\GUI\Crib\Application_win.cpp" />
     <ClCompile Include="src\GUI\Crib\COM.cpp" />
     <ClCompile Include="src\GUI\Crib\Error_win.cpp" />
+    <ClCompile Include="src\GUI\Crib\String_win.cpp" />
     <ClCompile Include="src\GUI\Crib\Window_win.cpp" />
     <ClCompile Include="src\GUI\FilePackWindow.cpp" />
     <ClCompile Include="src\main.cpp" />

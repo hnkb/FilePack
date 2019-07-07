@@ -2,6 +2,7 @@
 #pragma once
 
 #include "Crib/WindowsBase.h"
+#include "../FilePack.h"
 
 
 class FilePackWindow : public Crib::Window
@@ -16,6 +17,11 @@ protected:
 private:
 	void fillTree();
 	void fillList();
+
+
+	std::wstring m_filename;
+	std::unique_ptr<FilePack::Reader> m_reader;
+
 
 	// Controls
 

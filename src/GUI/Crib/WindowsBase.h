@@ -100,4 +100,13 @@ namespace Crib
 
 		HWND m_handle;
 	};
+
+
+	std::string toUtf8(const std::wstring& src);
+	std::string toLatin1(const std::wstring& src);
+	std::string toUserCodePage(const std::wstring& src);
+
+	std::wstring fromUtf8(const std::string& src);
+	std::wstring fromLatin1(const std::string& src);
+	std::wstring fromUserCodePage(const std::string& src);
 }

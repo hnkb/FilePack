@@ -3,6 +3,9 @@
 
 #include <CommCtrl.h>
 #include <strsafe.h>
+#include <Shlwapi.h>
+
+#pragma comment(lib, "shlwapi.lib")
 
 
 FilePackWindow::FilePackWindow() :
@@ -28,6 +31,8 @@ FilePackWindow::FilePackWindow() :
 		0, 0, 0, 0, m_handle, (HMENU)idListView, hInst, nullptr);
 
 
+	m_filename = L"C:\\Users\\hani\\OneDrive\\Desktop\\test-2.pcn";
+	m_reader.reset(new FilePack::Reader(m_filename));
 	fillTree();
 	fillList();
 }
@@ -43,14 +48,17 @@ FilePackWindow::~FilePackWindow()
 void FilePackWindow::fillTree()
 {
 	TreeView_DeleteAllItems(hwTreeView);
+	if (!m_reader)
+		return;
 
 
-	WCHAR title[] = L"root item!";
+	const int textSize = 512;
+	WCHAR text[textSize];
 
 	TVITEMW tvi;
 	tvi.mask = TVIF_TEXT | TVIF_STATE;// | TVIF_PARAM;
-	tvi.pszText = title;
-	tvi.cchTextMax = sizeof(title) / sizeof(title[0]);
+	tvi.pszText = text;
+	tvi.cchTextMax = textSize;
 	tvi.state = TVIS_EXPANDED;
 	tvi.stateMask = TVIS_EXPANDED;
 	//tvi.lParam = (LPARAM)nLevel;
@@ -60,12 +68,15 @@ void FilePackWindow::fillTree()
 	tvins.hParent = TVI_ROOT;
 	tvins.hInsertAfter = TVI_FIRST;
 
+	StringCchPrintfW(text, textSize, L"%s (%s)",
+		PathFindFileNameW(m_filename.c_str()),
+		Crib::fromLatin1(m_reader->signature()).c_str());
 	tvins.hParent = TreeView_InsertItem(hwTreeView, &tvins);
 	tvins.hInsertAfter = TVI_LAST;
 
-	for (int i = 0; i < 10; i++)
+	for (auto& block : m_reader->blocks())
 	{
-		StringCchPrintfW(title, 10, L"Item %d", i);
+		StringCchCopyW(text, textSize, Crib::fromLatin1(block.first).c_str());
 		TreeView_InsertItem(hwTreeView, &tvins);
 	}
 }
