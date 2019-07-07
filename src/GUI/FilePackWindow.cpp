@@ -19,13 +19,24 @@ FilePackWindow::FilePackWindow() :
 		WS_VISIBLE | WS_CHILD | WS_BORDER | TVS_HASLINES,
 		0, 0, 0, 0, m_handle, (HMENU)idTreeView, hInst, nullptr);
 
+	hwTextView = CreateWindowExW(0, L"EDIT", nullptr,
+		WS_VISIBLE | WS_CHILD | WS_VSCROLL | WS_HSCROLL | ES_LEFT | ES_MULTILINE | ES_READONLY | ES_AUTOVSCROLL | ES_AUTOHSCROLL,
+		0, 0, 0, 0, m_handle, (HMENU)idTextView, hInst, nullptr);
+
+	hwListView = CreateWindowExW(0, WC_LISTVIEWW, L"List View",
+		WS_VISIBLE | WS_CHILD | LVS_REPORT | LVS_OWNERDATA,
+		0, 0, 0, 0, m_handle, (HMENU)idListView, hInst, nullptr);
+
 
 	fillTree();
+	fillList();
 }
 
 FilePackWindow::~FilePackWindow()
 {
 	DestroyWindow(hwTreeView);
+	DestroyWindow(hwTextView);
+	DestroyWindow(hwListView);
 }
 
 
@@ -59,6 +70,41 @@ void FilePackWindow::fillTree()
 	}
 }
 
+void FilePackWindow::fillList()
+{
+	ListView_DeleteAllItems(hwListView);
+	while (ListView_DeleteColumn(hwListView, 0));
+
+
+	WCHAR text[256];
+
+	LVCOLUMNW lvc;
+	lvc.mask = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
+	lvc.pszText = text;
+
+	for (int i = 0; i < 5; i++)
+	{
+		StringCchPrintfW(text, 256, L"Column %d", i);
+		lvc.iSubItem = i;
+		lvc.cx = 100;
+		lvc.fmt = LVCFMT_LEFT;
+		ListView_InsertColumn(hwListView, i, &lvc);
+	}
+
+
+	LVITEMW lvi;
+	lvi.mask = LVIF_TEXT | LVIF_STATE;
+	lvi.pszText = LPSTR_TEXTCALLBACKW;
+	lvi.state = lvi.stateMask = 0;
+	lvi.iSubItem = 0;
+
+	for (int i = 0; i < 20; i++)
+	{
+		lvi.iItem = i;
+		ListView_InsertItem(hwListView, &lvi);
+	}
+}
+
 
 LRESULT FilePackWindow::proc(const UINT message, const WPARAM wParam, const LPARAM lParam)
 {
@@ -67,6 +113,22 @@ LRESULT FilePackWindow::proc(const UINT message, const WPARAM wParam, const LPAR
 		const int width = LOWORD(lParam);
 		const int height = HIWORD(lParam);
 		MoveWindow(hwTreeView, 0, 0, widthTreeView, width, TRUE);
+		MoveWindow(hwTextView, widthTreeView + controlMargin, 0, width - widthTreeView - controlMargin, height / 2 - controlMargin, TRUE);
+		MoveWindow(hwListView, widthTreeView + controlMargin, height / 2, width - widthTreeView - controlMargin, height / 2, TRUE);
+	}
+
+	if (message == WM_NOTIFY)
+	{
+		auto hdr = (NMHDR*)lParam;
+		
+		if (hdr->hwndFrom == hwListView && hdr->code == LVN_GETDISPINFO)
+		{
+			auto dispInfo = (NMLVDISPINFO*)lParam;
+			if (dispInfo->item.mask & LVIF_TEXT)
+			{
+				StringCchPrintf(dispInfo->item.pszText, dispInfo->item.cchTextMax, L"It %d Col %d", dispInfo->item.iItem, dispInfo->item.iSubItem);
+			}
+		}
 	}
 
 	if (message == WM_KEYDOWN && wParam == VK_ESCAPE)
