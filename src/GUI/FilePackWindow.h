@@ -4,6 +4,7 @@
 #include "Crib/WindowsBase.h"
 #include "../FilePack.h"
 #include "DataFormatter.h"
+#include "EmbeddedBrowser.h"
 
 
 class FilePackWindow : public Crib::Window
@@ -27,15 +28,15 @@ private:
 	std::unique_ptr<FilePack::Reader::Block<uint8_t>> m_blockData;
 	std::unique_ptr<DataFormatter> m_format;
 
+	std::unique_ptr<CWebBrowser> m_browser;
+
 
 	// Controls
 
 	HWND hwTreeView;
-	HWND hwTextView;
 	HWND hwListView;
 
 	const int idTreeView = 1000;
-	const int idTextView = 1001;
 	const int idListView = 1002;
 
 	const int widthTreeView = 150;

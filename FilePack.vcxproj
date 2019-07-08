@@ -163,6 +163,7 @@
     <ClCompile Include="src\GUI\Crib\String_win.cpp" />
     <ClCompile Include="src\GUI\Crib\Window_win.cpp" />
     <ClCompile Include="src\GUI\DataFormatter.cpp" />
+    <ClCompile Include="src\GUI\EmbeddedBrowser.cpp" />
     <ClCompile Include="src\GUI\FilePackWindow.cpp" />
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
@@ -171,6 +172,7 @@
     <ClInclude Include="src\FilePack.h" />
     <ClInclude Include="src\GUI\Crib\WindowsBase.h" />
     <ClInclude Include="src\GUI\DataFormatter.h" />
+    <ClInclude Include="src\GUI\EmbeddedBrowser.h" />
     <ClInclude Include="src\GUI\FilePackWindow.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

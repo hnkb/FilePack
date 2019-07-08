@@ -59,8 +59,8 @@ namespace Crib
 	{
 		namespace Message
 		{
-			constexpr UINT WindowClosed = (WM_APP + 1);
-			constexpr UINT Quit = (WM_APP + 2);
+			constexpr UINT WindowClosed = (WM_APP + 1001);
+			constexpr UINT Quit =         (WM_APP + 1002);
 		}
 
 		int messageLoop();

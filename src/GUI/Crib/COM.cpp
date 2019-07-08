@@ -9,7 +9,7 @@ Crib::InitializeCOM::InitializeCOM()
 	// initialized and available. The only difference is, in that case we don't want to
 	// Uninitialize afterwards (in destructor)
 
-	const auto hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+	const auto hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
 	needUninitialize = SUCCEEDED(hr);
 
 	if (hr != RPC_E_CHANGED_MODE)

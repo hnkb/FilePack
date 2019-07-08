@@ -31,7 +31,7 @@ Crib::Window::Window(const Options& options) :
 	wcex.lpszClassName = className.c_str();
 	wcex.lpfnWndProc = proc;
 	wcex.style = CS_HREDRAW | CS_VREDRAW;
-	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+	//wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
 	wcex.lpszMenuName = MAKEINTRESOURCEW(menu);
 	wcex.hIcon = LoadIconW(GetModuleHandleW(nullptr), MAKEINTRESOURCEW(icon));
 	RegisterClassExW(&wcex);

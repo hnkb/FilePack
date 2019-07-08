@@ -1,6 +1,7 @@
 
 #include "FilePackWindow.h"
 
+#include <atlcomcli.h>
 #include <CommCtrl.h>
 #include <strsafe.h>
 #include <Shlwapi.h>
@@ -22,14 +23,14 @@ FilePackWindow::FilePackWindow() :
 		WS_VISIBLE | WS_CHILD | WS_BORDER | TVS_HASLINES,
 		0, 0, 0, 0, m_handle, (HMENU)idTreeView, hInst, nullptr);
 
-	hwTextView = CreateWindowExW(0, L"EDIT", nullptr,
-		WS_VISIBLE | WS_CHILD | WS_VSCROLL | WS_HSCROLL | ES_LEFT | ES_MULTILINE | ES_READONLY | ES_AUTOVSCROLL | ES_AUTOHSCROLL,
-		0, 0, 0, 0, m_handle, (HMENU)idTextView, hInst, nullptr);
-
 	hwListView = CreateWindowExW(0, WC_LISTVIEWW, L"List View",
-		WS_VISIBLE | WS_CHILD | LVS_REPORT | LVS_OWNERDATA,
+		/*WS_VISIBLE |*/ WS_CHILD | LVS_REPORT | LVS_OWNERDATA,
 		0, 0, 0, 0, m_handle, (HMENU)idListView, hInst, nullptr);
 	ListView_SetExtendedListViewStyleEx(hwListView, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
+
+	m_browser.reset(new CWebBrowser(m_handle, nullptr));
+	if (m_browser)
+		m_browser->DisplayString(CComBSTR(L""));
 
 
 	m_filename = L"C:\\Users\\hani\\OneDrive\\Desktop\\test-2.pcn";
@@ -41,7 +42,6 @@ FilePackWindow::FilePackWindow() :
 FilePackWindow::~FilePackWindow()
 {
 	DestroyWindow(hwTreeView);
-	DestroyWindow(hwTextView);
 	DestroyWindow(hwListView);
 }
 
@@ -131,28 +131,46 @@ void FilePackWindow::selectBlock(std::string name)
 
 		if (name == "js")
 		{
-			auto data = m_reader->get<char>(name);
-			SetWindowTextA(hwTextView, data.begin());
-			m_format.reset(nullptr);
-			ShowWindow(hwTextView, SW_SHOW);
 			ShowWindow(hwListView, SW_HIDE);
+
+			if (m_browser)
+			{
+				auto data = m_reader->get<char>(name);
+				std::wstring txt =
+					L"<!DOCTYPE html>\n<html>\n<head><meta charset=\"utf-8\" /><title>Code Viewer</title>"
+					"<style type=\"text/css\">#editor { position: absolute; top: 0; right: 0; bottom: 0; left: 0; }</style>"
+					"</head><body><div id=\"editor\">"
+					+
+					Crib::fromUtf8(std::string(data.begin(), data.end()))
+					+
+					L"</div><script src=\"C:\\Users\\hani\\OneDrive\\Desktop\\ace\\ace.js\" type=\"text/javascript\" charset=\"utf-8\"></script>"
+					"<script>"
+					"var editor = ace.edit('editor');"
+					"editor.setTheme('ace/theme/dawn');"
+					"editor.session.setMode('ace/mode/json');"
+					"</script></body></html>";
+
+				CComBSTR bstr(txt.size(), txt.c_str());
+				m_browser->DisplayString(bstr);
+			}
+
+			return;
 		}
-		else if (formatDesc.find(name) != formatDesc.end())
+
+		if (formatDesc.find(name) != formatDesc.end())
 		{
 			m_blockData.reset(new FilePack::Reader::Block<uint8_t>(std::move(m_reader->get<uint8_t>(name))));
 			m_format.reset(new DataFormatter(formatDesc.at(name)));
 			fillList();
-			ShowWindow(hwTextView, SW_HIDE);
 			ShowWindow(hwListView, SW_SHOW);
-		}
-		else
-		{
-			m_format.reset(nullptr);
-			SetWindowText(hwTextView, L"");
-			ShowWindow(hwTextView, SW_HIDE);
-			ShowWindow(hwListView, SW_HIDE);
+			return;
 		}
 	}
+
+	m_format.reset(nullptr);
+	if (m_browser)
+		m_browser->DisplayString(CComBSTR(L""));
+	ShowWindow(hwListView, SW_HIDE);
 }
 
 
@@ -163,8 +181,10 @@ LRESULT FilePackWindow::proc(const UINT message, const WPARAM wParam, const LPAR
 		const int width = LOWORD(lParam);
 		const int height = HIWORD(lParam);
 		MoveWindow(hwTreeView, 0, 0, widthTreeView, width, TRUE);
-		MoveWindow(hwTextView, widthTreeView + controlMargin, 0, width - widthTreeView - controlMargin, height, TRUE);
 		MoveWindow(hwListView, widthTreeView + controlMargin, 0, width - widthTreeView - controlMargin, height, TRUE);
+		
+		RECT rc{ widthTreeView + controlMargin, 0, width, height };
+		m_browser->Resize(&rc);
 	}
 
 	if (message == WM_NOTIFY)
@@ -206,6 +226,13 @@ LRESULT FilePackWindow::proc(const UINT message, const WPARAM wParam, const LPAR
 	{
 		DestroyWindow(m_handle);
 		return 0;
+	}
+
+	if (message == WM_DESTROY)
+	{
+		// For some reason, when browser window works, some child windows linger
+		// and we never quit. This only works if I am main window.
+		PostQuitMessage(0);
 	}
 
 	return Window::proc(message, wParam, lParam);
