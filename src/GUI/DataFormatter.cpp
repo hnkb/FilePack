@@ -101,3 +101,37 @@ void DataFormatter::get(wchar_t* output, const size_t outputSize, const uint8_t*
 		}
 	}
 }
+
+
+
+
+
+StringListFormatter::StringListFormatter(const uint8_t* data, const size_t numberOfBytesInDataset)
+{
+	auto begin = (wchar_t*)data;
+	auto end = (wchar_t*)(data + numberOfBytesInDataset);
+
+	for (auto x = begin; x < end; x++)
+	{
+		offsets.push_back(x);
+		while (x < end && *x) x++;
+	}
+
+	rowCount = offsets.size();
+}
+
+void StringListFormatter::get(wchar_t* output, const size_t outputSize, const uint8_t* data, const size_t row, const int column)
+{
+	switch (column)
+	{
+	case 0:
+		StringCchPrintfW(output, outputSize, L"%lld", row);
+		break;
+	case 1:
+		StringCchPrintfW(output, outputSize, L"%lld", offsets[row] - (wchar_t*)data);
+		break;
+	case 2:
+		StringCchCopyW(output, outputSize, offsets[row]);
+		break;
+	}
+}

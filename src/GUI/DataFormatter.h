@@ -42,3 +42,17 @@ public:
 
 	std::vector<Column> columns;
 };
+
+
+class StringListFormatter :public DataFormatterBase
+{
+public:
+	StringListFormatter(const uint8_t* data, const size_t numberOfBytesInDataset);
+	void get(wchar_t* output, const size_t outputSize, const uint8_t* data, const size_t row, const int column) override;
+
+
+	size_t columnCount() override { return 2; }
+	std::wstring columnLabel(int i) override { return i == 0 ? L"Offset" : L"Text"; }
+
+	std::vector<wchar_t*> offsets;
+};

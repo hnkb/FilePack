@@ -165,6 +165,15 @@ void FilePackWindow::selectBlock(std::string name)
 			ShowWindow(hwListView, SW_SHOW);
 			return;
 		}
+
+		if (name == "id")
+		{
+			m_blockData.reset(new FilePack::Reader::Block<uint8_t>(std::move(m_reader->get<uint8_t>(name))));
+			m_format.reset(new StringListFormatter(m_blockData->data(), m_blockData->size()));
+			fillList();
+			ShowWindow(hwListView, SW_SHOW);
+			return;
+		}
 	}
 
 	m_format.reset(nullptr);
