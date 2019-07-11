@@ -104,7 +104,7 @@ void FilePackWindow::fillList()
 
 	for (int i = 0; i < m_format->columns.size(); i++)
 	{
-		StringCchCopy(text, 256, m_format->columns[i].name.c_str());
+		StringCchCopy(text, 256, m_format->columns[i].label.c_str());
 		lvc.iSubItem = i + 1;
 		lvc.cx = 100;
 		lvc.fmt = LVCFMT_LEFT;
@@ -112,7 +112,7 @@ void FilePackWindow::fillList()
 	}
 
 
-	ListView_SetItemCountEx(hwListView, m_blockData->size() / m_format->rowSize, LVSICF_NOSCROLL);
+	ListView_SetItemCountEx(hwListView, m_format->rowCount, LVSICF_NOSCROLL);
 }
 
 void FilePackWindow::selectBlock(std::string name)
@@ -126,7 +126,7 @@ void FilePackWindow::selectBlock(std::string name)
 			{ "pt2d.x", "fx" },
 			{ "pt2d.y", "fy" },
 			{ "pt3d.layer", "iLayer" },
-			{ "pt3d.mix2", "dX,dY,dZ,dStdDevX,dStdDevY,dStdDevZ" },
+			{ "pt3d.mix2", "dX;dY;dZ;dStdDevX;dStdDevY;dStdDevZ" },
 		};
 
 		if (name == "js")
@@ -160,7 +160,7 @@ void FilePackWindow::selectBlock(std::string name)
 		if (formatDesc.find(name) != formatDesc.end())
 		{
 			m_blockData.reset(new FilePack::Reader::Block<uint8_t>(std::move(m_reader->get<uint8_t>(name))));
-			m_format.reset(new DataFormatter(formatDesc.at(name)));
+			m_format.reset(new DataFormatter(formatDesc.at(name), m_blockData->size()));
 			fillList();
 			ShowWindow(hwListView, SW_SHOW);
 			return;
