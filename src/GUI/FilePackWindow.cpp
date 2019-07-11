@@ -106,7 +106,7 @@ void FilePackWindow::fillList()
 	{
 		StringCchCopy(text, 256, m_format->columnLabel(i).c_str());
 		lvc.iSubItem = i + 1;
-		lvc.cx = 100;
+		lvc.cx = m_format->columnWidth(i);
 		lvc.fmt = LVCFMT_LEFT;
 		ListView_InsertColumn(hwListView, lvc.iSubItem, &lvc);
 	}

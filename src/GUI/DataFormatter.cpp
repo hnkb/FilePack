@@ -65,7 +65,7 @@ DataFormatter::DataFormatter(std::string formatDesc, const size_t numberOfBytesI
 	}
 }
 
-void DataFormatter::get(wchar_t* output, const size_t outputSize, const uint8_t* data, const size_t row, const int column)
+void DataFormatter::get(wchar_t* output, size_t outputSize, const uint8_t* data, const size_t row, const int column)
 {
 	if (column == 0)
 	{
@@ -80,19 +80,23 @@ void DataFormatter::get(wchar_t* output, const size_t outputSize, const uint8_t*
 		switch (c.type)
 		{
 		case 'b':
-			StringCchPrintfW(output, outputSize, L"%d", (int)(*ptr));
+			for (int i = 0; i < c.count; i++)
+				StringCchPrintfExW(output, outputSize, &output, &outputSize, 0, i == 0 ? L"%d" : L"   %d", (int)(*ptr));
 			break;
 
 		case 'i':
-			StringCchPrintfW(output, outputSize, L"%d", *(int*)ptr);
+			for (int i = 0; i < c.count; i++)
+				StringCchPrintfExW(output, outputSize, &output, &outputSize, 0, i == 0 ? L"%d" : L"   %d", *(int*)ptr);
 			break;
 
 		case 'f':
-			StringCchPrintfW(output, outputSize, L"%g", *(float*)ptr);
+			for (int i = 0; i < c.count; i++)
+				StringCchPrintfExW(output, outputSize, &output, &outputSize, 0, i == 0 ? L"%g" : L"   %g", *(float*)ptr);
 			break;
 
 		case 'd':
-			StringCchPrintfW(output, outputSize, L"%g", *(double*)ptr);
+			for (int i = 0; i < c.count; i++)
+				StringCchPrintfExW(output, outputSize, &output, &outputSize, 0, i == 0 ? L"%g" : L"   %g", *(double*)ptr);
 			break;
 
 		default:
@@ -120,7 +124,7 @@ StringListFormatter::StringListFormatter(const uint8_t* data, const size_t numbe
 	rowCount = offsets.size();
 }
 
-void StringListFormatter::get(wchar_t* output, const size_t outputSize, const uint8_t* data, const size_t row, const int column)
+void StringListFormatter::get(wchar_t* output, size_t outputSize, const uint8_t* data, const size_t row, const int column)
 {
 	switch (column)
 	{
