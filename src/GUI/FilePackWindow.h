@@ -26,7 +26,7 @@ private:
 	std::unique_ptr<FilePack::Reader> m_reader;
 
 	std::unique_ptr<FilePack::Reader::Block<uint8_t>> m_blockData;
-	std::unique_ptr<DataFormatter> m_format;
+	std::unique_ptr<DataFormatterBase> m_format;
 
 	std::unique_ptr<CWebBrowser> m_browser;
 

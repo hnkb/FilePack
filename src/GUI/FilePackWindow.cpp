@@ -86,7 +86,7 @@ void FilePackWindow::fillList()
 {
 	while (ListView_DeleteColumn(hwListView, 0));
 
-	if (!m_format || m_format->columns.empty())
+	if (!m_format || m_format->columnCount() == 0)
 		return;
 
 
@@ -102,9 +102,9 @@ void FilePackWindow::fillList()
 	lvc.fmt = LVCFMT_LEFT;
 	ListView_InsertColumn(hwListView, lvc.iSubItem, &lvc);
 
-	for (int i = 0; i < m_format->columns.size(); i++)
+	for (int i = 0; i < m_format->columnCount(); i++)
 	{
-		StringCchCopy(text, 256, m_format->columns[i].label.c_str());
+		StringCchCopy(text, 256, m_format->columnLabel(i).c_str());
 		lvc.iSubItem = i + 1;
 		lvc.cx = 100;
 		lvc.fmt = LVCFMT_LEFT;
@@ -196,10 +196,10 @@ LRESULT FilePackWindow::proc(const UINT message, const WPARAM wParam, const LPAR
 			auto dispInfo = (NMLVDISPINFO*)lParam;
 			if (dispInfo->item.mask & LVIF_TEXT)
 			{
-				if (dispInfo->item.iSubItem == 0)
+				if (m_format && m_blockData)
+					m_format->get(dispInfo->item.pszText, dispInfo->item.cchTextMax, m_blockData->data(), dispInfo->item.iItem, dispInfo->item.iSubItem);
+				else if (dispInfo->item.iSubItem == 0)
 					StringCchPrintf(dispInfo->item.pszText, dispInfo->item.cchTextMax, L"%d", dispInfo->item.iItem);
-				else if (m_format && m_blockData)
-					m_format->get(dispInfo->item.pszText, dispInfo->item.cchTextMax, m_blockData->data(), dispInfo->item.iItem, dispInfo->item.iSubItem - 1);
 				else
 					dispInfo->item.pszText[0] = 0;
 			}

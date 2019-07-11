@@ -67,29 +67,37 @@ DataFormatter::DataFormatter(std::string formatDesc, const size_t numberOfBytesI
 
 void DataFormatter::get(wchar_t* output, const size_t outputSize, const uint8_t* data, const size_t row, const int column)
 {
-	const auto& c = columns.at(column);
-	auto ptr = data + row * c.pitch + c.offset;
-
-	switch (columns[column].type)
+	if (column == 0)
 	{
-	case 'b':
-		StringCchPrintfW(output, outputSize, L"%d", (int)(*ptr));
-		break;
+		StringCchPrintfW(output, outputSize, L"%lld", row);
+	}
+	else
+	{
 
-	case 'i':
-		StringCchPrintfW(output, outputSize, L"%d", *(int*)ptr);
-		break;
+		const auto& c = columns.at(column - 1);
+		auto ptr = data + row * c.pitch + c.offset;
 
-	case 'f':
-		StringCchPrintfW(output, outputSize, L"%g", *(float*)ptr);
-		break;
+		switch (c.type)
+		{
+		case 'b':
+			StringCchPrintfW(output, outputSize, L"%d", (int)(*ptr));
+			break;
 
-	case 'd':
-		StringCchPrintfW(output, outputSize, L"%g", *(double*)ptr);
-		break;
+		case 'i':
+			StringCchPrintfW(output, outputSize, L"%d", *(int*)ptr);
+			break;
 
-	default:
-		StringCchPrintfW(output, outputSize, L"-");
-		break;
+		case 'f':
+			StringCchPrintfW(output, outputSize, L"%g", *(float*)ptr);
+			break;
+
+		case 'd':
+			StringCchPrintfW(output, outputSize, L"%g", *(double*)ptr);
+			break;
+
+		default:
+			StringCchPrintfW(output, outputSize, L"-");
+			break;
+		}
 	}
 }
