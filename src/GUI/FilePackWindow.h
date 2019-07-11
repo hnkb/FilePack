@@ -36,9 +36,6 @@ private:
 	HWND hwTreeView;
 	HWND hwListView;
 
-	const int idTreeView = 1000;
-	const int idListView = 1002;
-
 	const int widthTreeView = 150;
 	const int controlMargin = 8;
 };

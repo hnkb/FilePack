@@ -21,11 +21,11 @@ FilePackWindow::FilePackWindow() :
 
 	hwTreeView = CreateWindowExW(0, WC_TREEVIEWW, L"Tree View",
 		WS_VISIBLE | WS_CHILD | WS_BORDER | TVS_HASLINES,
-		0, 0, 0, 0, m_handle, (HMENU)idTreeView, hInst, nullptr);
+		0, 0, 0, 0, m_handle, (HMENU)1001, hInst, nullptr);
 
 	hwListView = CreateWindowExW(0, WC_LISTVIEWW, L"List View",
 		/*WS_VISIBLE |*/ WS_CHILD | LVS_REPORT | LVS_OWNERDATA,
-		0, 0, 0, 0, m_handle, (HMENU)idListView, hInst, nullptr);
+		0, 0, 0, 0, m_handle, (HMENU)1002, hInst, nullptr);
 	ListView_SetExtendedListViewStyleEx(hwListView, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
 
 	m_browser.reset(new CWebBrowser(m_handle, nullptr));
@@ -150,7 +150,7 @@ void FilePackWindow::selectBlock(std::string name)
 					"editor.session.setMode('ace/mode/json');"
 					"</script></body></html>";
 
-				CComBSTR bstr(txt.size(), txt.c_str());
+				CComBSTR bstr((int)txt.size(), txt.c_str());
 				m_browser->DisplayString(bstr);
 			}
 
